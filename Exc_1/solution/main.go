@@ -6,11 +6,11 @@ type Greeting struct {
 	Words string
 }
 
-func (g Greeting) Shout() string {
-	return g.Words
+func (g *Greeting) Shout() {
+	fmt.Println(g.Words)
 }
 
 func main() {
 	g := Greeting{"Hello WOld"}
-	fmt.Println(g.Shout())
+	g.Shout()
 }
