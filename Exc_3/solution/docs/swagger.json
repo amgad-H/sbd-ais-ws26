@@ -1,0 +1,151 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This system enables drink orders and should not be used for the forbidden Hungover Games.",
+        "title": "Order System",
+        "contact": {
+            "name": "Your Name"
+        }
+    },
+    "paths": {
+        "/api/menu": {
+            "get": {
+                "description": "Returns the menu of all drinks",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Menu"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Drink"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/order": {
+            "post": {
+                "description": "Adds an order to the db",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "parameters": [
+                    {
+                        "description": "Order",
+                        "name": "b",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/Order"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/order/all": {
+            "get": {
+                "description": "Returns all orders",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/Order"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/order/totalled": {
+            "get": {
+                "description": "Returns how many of each drink have been ordered (drink id -\u003e amount)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Order"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "Drink": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Description is a short text shown next to the drink on the menu.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID uniquely identifies the drink and is referenced by Order.DrinkID.",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Name is the display name shown on the menu.",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Price is the price per unit. A float is used since prices have decimals.",
+                    "type": "number"
+                }
+            }
+        },
+        "Order": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "description": "Amount is the number of units ordered. It is unsigned because\na negative amount would not make sense.",
+                    "type": "integer"
+                },
+                "created_at": {
+                    "description": "CreatedAt is the time the order was placed. In JSON it is encoded\nas an RFC 3339 timestamp, e.g. \"2026-10-20T10:30:00+02:00\".",
+                    "type": "string"
+                },
+                "drink_id": {
+                    "description": "DrinkID is a foreign key that references Drink.ID.",
+                    "type": "integer"
+                }
+            }
+        }
+    }
+}
