@@ -88,18 +88,26 @@ class KafkaSink:
     TODO (Part 2, Stage C1). clients/producer.py of Part 1 shows
     how to produce. Decide, and justify in your decision record: which topic
     (created how?), which key, which producer settings?
+
+    Topic `readings`, created beforehand with 6 partitions (see solution/).
+    Key = machine_id: all readings of a machine go to the same partition, so
+    they stay in seq order and reach the same detector instance (R2).
     """
+    TOPIC = "readings"
 
     def __init__(self, args):
         from confluent_kafka import Producer
         self.producer = Producer({
             "bootstrap.servers": args.bootstrap,
-            # TODO: more settings?
+            "partitioner": "murmur2_random",   # same key -> partition mapping as the Java clients / CLI tools
+            "acks": "all",                     # a reading counts as sent only when the broker has stored it
+            "enable.idempotence": True,        # retries create no duplicates and do not reorder a partition (R2)
+            "linger.ms": 10,                   # batch for up to 10 ms: high throughput, still far below 5 s (R1, R3)
         })
 
     def send(self, reading):
-        # TODO: send the reading (as JSON) to Kafka: self.producer.produce(...)
-        raise NotImplementedError("KafkaSink.send() is part of your solution (Stage C1)")
+        # asynchronous: no flush() per reading, delivery reports are served in tick()
+        self.producer.produce(self.TOPIC, key=reading["machine_id"], value=json.dumps(reading))
 
     def tick(self):
         """Called once per tick, after all readings of that tick were sent."""
