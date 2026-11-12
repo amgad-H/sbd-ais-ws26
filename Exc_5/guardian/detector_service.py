@@ -50,7 +50,7 @@ consumer = Consumer({
     # 7 days of old readings first: the alerts would come hours late (R3).
     # Once the group has committed offsets, it continues from there anyway.
 
-    "auto.offset.reset": "latest",     # TODO: why "latest" and not "earliest" for a live detector?
+    "auto.offset.reset": "latest",     # why "latest" and not "earliest" for a live detector?
 })
 producer = Producer({
     "bootstrap.servers": args.bootstrap,
@@ -78,7 +78,7 @@ def on_revoke(c, partitions):
     print(f"[{args.name}] revoked partitions {sorted(p.partition for p in partitions)}", flush=True)
 
 
-consumer.subscribe([args.in_topic])
+consumer.subscribe([args.in_topic], on_assign=on_assign, on_revoke=on_revoke)
 print(f"[{args.name}] {args.in_topic} -> {args.out_topic} (Ctrl+C to stop)", flush=True)
 
 readings = anomalies = 0
@@ -92,12 +92,13 @@ try:
             print(f"[{args.name}] {msg.error()}")
             continue
         reading = json.loads(msg.value())
+        machines_of[msg.partition()].add(reading["machine_id"])
         score = model.score(reading)
         readings += 1
         if score is not None and score >= model.threshold:
             anomalies += 1
             event = model.anomaly_event(reading, score)
-            producer.produce(args.out_topic, key=None,       # TODO: which key?
+            producer.produce(args.out_topic, key=reading["machine_id"],       # machine id is key
                              value=json.dumps(event))
         producer.poll(0)
         if time.time() >= report_at:
