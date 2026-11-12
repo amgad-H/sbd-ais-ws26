@@ -39,7 +39,7 @@ ap.add_argument("--out-topic", default="anomalies")
 ap.add_argument("--bootstrap", default="localhost:9092")
 args = ap.parse_args()
 if not args.in_topic or not args.group:
-    raise SystemExit("TODO: set --in-topic and --group (or give them defaults above)")
+    raise SystemExit("Please set --in-topic and --group (or give them defaults above)")
 
 model = BearingModel(instance=args.name)
 consumer = Consumer({
